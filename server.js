@@ -13,7 +13,7 @@ app.use(cors());
 const publicPath = path.join(__dirname, "public");
 
 // Enhanced job data with more fields
-const jobs = [
+const demoJobs = [
   { id: 1, title: "Senior ML Engineer", company: "OpenAI", company_logo: "🤖", description: "Build cutting-edge AI models.", requirements: "Python, TensorFlow, PyTorch, 5+ years exp", salary_min: 200000, salary_max: 400000, location: "Remote", apply_url: "https://openai.com/careers", source: "manual", tags: ["Python", "TensorFlow", "PyTorch", "ML", "AI"], featured: 1, posted_at: new Date().toISOString(), experience_level: "Senior", company_size: "1000+" },
   { id: 2, title: "AI Research Scientist", company: "DeepMind", company_logo: "🧠", description: "Conduct groundbreaking AI research.", requirements: "PhD, Deep Learning", salary_min: 180000, salary_max: 350000, location: "Remote", apply_url: "https://deepmind.com/careers", source: "manual", tags: ["Research", "Deep Learning", "NLP", "AI"], featured: 1, posted_at: new Date().toISOString(), experience_level: "Senior", company_size: "1000+" },
   { id: 3, title: "Junior AI Engineer", company: "Anthropic", company_logo: "🧩", description: "Build reliable AI systems.", requirements: "Python, ML frameworks, 1+ years exp", salary_min: 120000, salary_max: 180000, location: "Remote", apply_url: "https://anthropic.com/careers", source: "manual", tags: ["Python", "AI", "LLM"], featured: 0, posted_at: new Date().toISOString(), experience_level: "Junior", company_size: "100-500" },
@@ -25,6 +25,30 @@ const jobs = [
   { id: 9, title: "Junior Data Scientist", company: "DataRobot", company_logo: "🤖", description: "Build ML models for enterprise.", requirements: "Python, SQL, Statistics", salary_min: 90000, salary_max: 140000, location: "Remote", apply_url: "https://datarobot.com/careers", source: "manual", tags: ["Data Science", "Python", "ML", "SQL"], featured: 0, posted_at: new Date().toISOString(), experience_level: "Junior", company_size: "500-1000" },
   { id: 10, title: "Senior MLOps Engineer", company: "Weights & Biases", company_logo: "📊", description: "Build ML platform infrastructure.", requirements: "Kubernetes, Python, AWS", salary_min: 180000, salary_max: 280000, location: "Remote", apply_url: "https://wandb.com/careers", source: "manual", tags: ["MLOps", "Kubernetes", "AWS", "Python"], featured: 0, posted_at: new Date().toISOString(), experience_level: "Senior", company_size: "50-100" }
 ];
+
+// Scraped jobs (fetched from free APIs)
+let scrapedJobs = [];
+let jobsLastUpdated = null;
+
+// Fetch jobs from free APIs
+async function fetchScrapedJobs() {
+  try {
+    const scraper = require("./scraper-free.js");
+    scrapedJobs = await scraper.fetchAllFreeJobs();
+    jobsLastUpdated = new Date().toISOString();
+    console.log("Scraped " + scrapedJobs.length + " jobs from free APIs");
+  } catch (e) {
+    console.error("Scraping failed:", e.message);
+  }
+}
+
+// Combine all jobs
+function getAllJobs() {
+  return [...demoJobs, ...scrapedJobs];
+}
+
+// Fetch scraped jobs on startup (async, don't wait)
+fetchScrapedJobs();
 
 // In-memory user store (would be database in production)
 const users = [];
@@ -42,7 +66,7 @@ const analytics = {
 
 // Get all jobs with filters
 app.get("/api/jobs", function(req, res) {
-  var result = jobs.slice();
+  var result = getAllJobs().slice();
   var search = req.query.search;
   var tag = req.query.tag;
   var featured = req.query.featured;
@@ -101,10 +125,20 @@ app.get("/api/jobs/:id", function(req, res) {
 
 // Get stats
 app.get("/api/stats", function(req, res) {
+  var allJobs = getAllJobs();
   res.json({ 
-    totalJobs: jobs.length, 
-    featuredJobs: jobs.filter(function(j) { return j.featured === 1; }).length,
+    totalJobs: allJobs.length, 
+    featuredJobs: allJobs.filter(function(j) { return j.featured === 1; }).length,
+    scrapedJobs: scrapedJobs.length,
+    lastUpdated: jobsLastUpdated,
     pageViews: analytics.pageViews
+  });
+});
+
+// Refresh scraped jobs
+app.post("/api/jobs/refresh", function(req, res) {
+  fetchScrapedJobs().then(function() {
+    res.json({ ok: true, scrapedJobs: scrapedJobs.length });
   });
 });
 

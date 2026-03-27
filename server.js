@@ -10,8 +10,8 @@ app.use(cors());
 
 const publicPath = path.join(__dirname, "public");
 var staticFiles = ["index.html", "jobs.html", "job.html", "post.html", "styles.css", "app.js"];
-app.get("/:file", function(req, res) {
-  var file = req.params.file;
+app.get(/\/(.+)/, function(req, res) {
+  var file = req.params[0];
   if (staticFiles.indexOf(file) === -1) return res.status(404).send("not found");
   var filePath = path.join(publicPath, file);
   fs.readFile(filePath, function(err, data) {

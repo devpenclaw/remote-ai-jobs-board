@@ -59,9 +59,15 @@ app.get("/api/stats", function(req, res) {
 // Static files
 function serveStatic(file, res) {
   var filePath = path.join(publicPath, file);
+  var ext = file.split(".").pop();
+  var contentType = "text/plain";
+  if (ext === "css") contentType = "text/css";
+  else if (ext === "js") contentType = "application/javascript";
+  else if (ext === "html") contentType = "text/html";
+  else if (ext === "svg") contentType = "image/svg+xml";
   fs.readFile(filePath, function(err, data) {
     if (err) return res.status(404).send("not found");
-    res.send(data);
+    res.type(contentType).send(data);
   });
 }
 

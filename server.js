@@ -27,28 +27,22 @@ const demoJobs = [
 ];
 
 // Scraped jobs (fetched from free APIs) - persisted to file
-// On Vercel, use /tmp for writable storage
-const isVercel = process.env.VERCEL === "1";
-const JOBS_FILE = isVercel ? "/tmp/jobs-cache.json" : path.join(__dirname, "jobs-cache.json");
+const JOBS_FILE = path.join(__dirname, "jobs-cache.json");
 let scrapedJobs = [];
 let jobsLastUpdated = null;
-
-// For Vercel, also check current directory for the bundled file
-if (isVercel) {
-  const altPath = path.join(process.cwd(), "jobs-cache.json");
-  if (require("fs").existsSync(altPath)) {
-    JOBS_FILE = altPath;
-  }
-}
 
 // Load cached jobs from file
 function loadCachedJobs() {
   try {
+    console.log("Loading jobs from:", JOBS_FILE);
+    console.log("File exists:", fs.existsSync(JOBS_FILE));
     if (fs.existsSync(JOBS_FILE)) {
       const data = JSON.parse(fs.readFileSync(JOBS_FILE, "utf8"));
       scrapedJobs = data.jobs || [];
       jobsLastUpdated = data.lastUpdated;
       console.log("Loaded " + scrapedJobs.length + " cached jobs");
+    } else {
+      console.log("Jobs file not found, will fetch from APIs");
     }
   } catch (e) {
     console.error("Failed to load cached jobs:", e.message);

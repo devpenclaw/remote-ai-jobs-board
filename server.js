@@ -7,14 +7,14 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public")));
 
-// Serve index.html for root
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+const publicPath = path.join(__dirname, "public");
+app.use(express.static(publicPath));
+
+app.get("/", function(req, res) {
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
-// Demo jobs data
 const demoJobs = [
   { id: 1, title: "Senior ML Engineer", company: "OpenAI", company_logo: "https://logo.clearbit.com/openai.com", description: "Build cutting-edge AI models.", requirements: "Python, TensorFlow, PyTorch", salary_min: 200000, salary_max: 400000, location: "Remote", apply_url: "https://openai.com/careers", source: "manual", tags: ["Python", "TensorFlow", "PyTorch", "ML", "AI"], featured: 1, posted_at: new Date().toISOString() },
   { id: 2, title: "AI Research Scientist", company: "DeepMind", company_logo: "https://logo.clearbit.com/deepmind.com", description: "Conduct groundbreaking AI research.", requirements: "PhD, Deep Learning", salary_min: 180000, salary_max: 350000, location: "Remote", apply_url: "https://deepmind.com/careers", source: "manual", tags: ["Research", "Deep Learning", "NLP"], featured: 1, posted_at: new Date().toISOString() },
@@ -26,73 +26,39 @@ const demoJobs = [
   { id: 8, title: "AI Product Manager", company: "Runway", company_logo: "https://logo.clearbit.com/runwayml.com", description: "Lead AI product strategy.", requirements: "AI/ML experience, Product sense", salary_min: 160000, salary_max: 280000, location: "Remote", apply_url: "https://runwayml.com/careers", source: "demo", tags: ["Product", "AI", "Strategy"], featured: 0, posted_at: new Date().toISOString() }
 ];
 
-// API Routes
-app.get("/api/jobs", (req, res) => {
-  const { search, tag, featured, limit = 50 } = req.query;
-  let jobs = [...demoJobs];
+app.get("/api/jobs", function(req, res) {
+  var jobs = demoJobs.slice();
+  var search = req.query.search;
+  var tag = req.query.tag;
+  var featured = req.query.featured;
   
   if (search) {
-    const s = search.toLowerCase();
-    jobs = jobs.filter(j => 
-      j.title.toLowerCase().includes(s) || 
-      j.company.toLowerCase().includes(s) || 
-      j.tags.some(t => t.toLowerCase().includes(s))
-    );
+    var s = search.toLowerCase();
+    jobs = jobs.filter(function(j) {
+      return j.title.toLowerCase().indexOf(s) !== -1 || 
+             j.company.toLowerCase().indexOf(s) !== -1 ||
+             j.tags.some(function(t) { return t.toLowerCase().indexOf(s) !== -1; });
+    });
   }
   
   if (tag) {
-    jobs = jobs.filter(j => 
-      j.tags.some(t => t.toLowerCase().includes(tag.toLowerCase()))
-    );
+    var t = tag.toLowerCase();
+    jobs = jobs.filter(function(j) {
+      return j.tags.some(function(tag) { return tag.toLowerCase().indexOf(t) !== -1; });
+    });
   }
   
   if (featured === "true") {
-    jobs = jobs.filter(j => j.featured === 1);
+    jobs = jobs.filter(function(j) { return j.featured === 1; });
   }
   
-  res.json(jobs.slice(0, parseInt(limit)));
+  res.json(jobs.slice(0, 50));
 });
 
-app.get("/api/jobs/:id", (req, res) => {
-  const job = demoJobs.find(j => j.id === parseInt(req.params.id));
-  job ? res.json(job) : res.status(404).json({ error: "Job not found" });
+app.get("/api/stats", function(req, res) {
+  res.json({ totalJobs: demoJobs.length, featuredJobs: demoJobs.filter(function(j) { return j.featured === 1; }).length });
 });
 
-app.post("/api/jobs", (req, res) => {
-  const { title, company, apply_url } = req.body;
-  if (!title || !company || !apply_url) {
-    return res.status(400).json({ error: "Title, company, and apply_url are required" });
-  }
-  const newJob = { 
-    id: demoJobs.length + 1, 
-    title, 
-    company, 
-    description: "", 
-    requirements: "", 
-    salary_min: 0, 
-    salary_max: 0, 
-    location: "Remote", 
-    apply_url, 
-    source: "manual", 
-    tags: [], 
-    featured: 0, 
-    posted_at: new Date().toISOString() 
-  };
-  demoJobs.push(newJob);
-  res.json({ success: true, id: newJob.id });
-});
-
-app.get("/api/stats", (req, res) => {
-  res.json({ 
-    totalJobs: demoJobs.length, 
-    featuredJobs: demoJobs.filter(j => j.featured === 1).length 
-  });
-});
-
-app.get("/api/scrape", (req, res) => {
-  res.json({ success: true, message: "Demo mode", totalJobs: demoJobs.length });
-});
-
-app.listen(PORT, () => {
-  console.log("Remote AI Jobs running on port " + PORT);
+app.listen(PORT, function() {
+  console.log("Server running on port " + PORT);
 });

@@ -34,15 +34,11 @@ let jobsLastUpdated = null;
 // Load cached jobs from file
 function loadCachedJobs() {
   try {
-    console.log("Loading jobs from:", JOBS_FILE);
-    console.log("File exists:", fs.existsSync(JOBS_FILE));
     if (fs.existsSync(JOBS_FILE)) {
       const data = JSON.parse(fs.readFileSync(JOBS_FILE, "utf8"));
       scrapedJobs = data.jobs || [];
       jobsLastUpdated = data.lastUpdated;
       console.log("Loaded " + scrapedJobs.length + " cached jobs");
-    } else {
-      console.log("Jobs file not found, will fetch from APIs");
     }
   } catch (e) {
     console.error("Failed to load cached jobs:", e.message);

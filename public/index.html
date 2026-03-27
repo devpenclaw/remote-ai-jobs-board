@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="/favicon.svg"><title>Remote AI Jobs | Find Your Next AI Role</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <title>Remote AI Jobs | Find Your Next AI Role</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <nav class="navbar">
@@ -18,6 +16,7 @@
       </a>
       <div class="nav-links">
         <a href="/jobs.html" class="nav-link">Browse Jobs</a>
+        <button class="btn btn-secondary" id="loginBtn">Sign In</button>
         <a href="/post.html" class="btn btn-primary">Post a Job</a>
       </div>
     </div>
@@ -25,7 +24,7 @@
 
   <header class="hero">
     <div class="container">
-      <div class="hero-badge">🚀 500+ Remote AI Jobs</div>
+      <div class="hero-badge">🚀 <span id="totalJobs">--</span> Remote AI Jobs</div>
       <h1>Find Your Next <span class="gradient-text">AI Role</span></h1>
       <p class="hero-subtitle">Curated remote opportunities in Machine Learning, NLP, Computer Vision & AI Research</p>
       
@@ -36,7 +35,7 @@
       
       <div class="hero-stats">
         <div class="stat">
-          <span class="stat-value" id="totalJobs">--</span>
+          <span class="stat-value" id="totalJobsStat">--</span>
           <span class="stat-label">Active Jobs</span>
         </div>
         <div class="stat">
@@ -85,16 +84,6 @@
           <div class="skeleton-line w-40"></div>
           <div class="skeleton-line"></div>
         </div>
-        <div class="job-card skeleton">
-          <div class="skeleton-line w-60"></div>
-          <div class="skeleton-line w-40"></div>
-          <div class="skeleton-line"></div>
-        </div>
-        <div class="job-card skeleton">
-          <div class="skeleton-line w-60"></div>
-          <div class="skeleton-line w-40"></div>
-          <div class="skeleton-line"></div>
-        </div>
       </div>
     </div>
   </section>
@@ -134,7 +123,7 @@
   <section class="cta">
     <div class="container">
       <div class="cta-box">
-        <h2> hiring AI talent?</h2>
+        <h2>hiring AI talent?</h2>
         <p>Reach 50,000+ AI professionals looking for remote roles.</p>
         <a href="/post.html" class="btn btn-primary">Post a Job — $99/month</a>
       </div>
@@ -159,13 +148,59 @@
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <!-- Login Modal -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      <h2>Sign In / Register</h2>
+      <form id="authForm">
+        <input type="email" id="authEmail" placeholder="Email" required>
+        <input type="password" id="authPassword" placeholder="Password" required>
+        <select id="authType">
+          <option value="jobseeker">Job Seeker</option>
+          <option value="employer">Employer</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+        <button type="button" class="btn btn-secondary" id="registerBtn">Register</button>
+      </form>
+      <div id="authMessage"></div>
+    </div>
+  </div>
+
+  <!-- Alert Modal -->
+  <div class="modal" id="alertModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeAlertModal">&times;</span>
+      <h2>Subscribe to Job Alerts</h2>
+      <p>Get notified when new AI jobs matching your interests are posted.</p>
+      <form id="alertForm">
+        <input type="email" id="alertEmail" placeholder="Your email" required>
+        <select id="alertTag">
+          <option value="">All new jobs</option>
+          <option value="ML">Machine Learning</option>
+          <option value="NLP">NLP</option>
+          <option value="Computer Vision">Computer Vision</option>
+          <option value="Research">AI Research</option>
+          <option value="MLOps">MLOps</option>
+          <option value="Python">Python</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <div id="alertMessage"></div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
   <script>
+    // Track page view
+    fetch('/api/track/pageview', { method: 'POST' });
+    
     // Load stats
     fetch('/api/stats')
       .then(r => r.json())
       .then(data => {
         document.getElementById('totalJobs').textContent = data.totalJobs;
+        document.getElementById('totalJobsStat').textContent = data.totalJobs;
       });
 
     // Load featured jobs
@@ -184,7 +219,65 @@
     document.getElementById('searchForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const q = document.getElementById('searchInput').value;
-      window.location.href = `/jobs.html?q=${encodeURIComponent(q)}`;
+      window.location.href = '/jobs.html?q=' + encodeURIComponent(q);
+    });
+
+    // Auth modal
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeModal = document.getElementById('closeModal');
+    
+    loginBtn.addEventListener('click', () => {
+      loginModal.style.display = 'block';
+    });
+    
+    closeModal.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+    });
+    
+    // Register button
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const userType = document.getElementById('authType').value;
+      
+      fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, userType })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('authMessage').textContent = data.error;
+        } else {
+          document.getElementById('authMessage').textContent = 'Registered! You can now sign in.';
+        }
+      });
+    });
+    
+    // Login form
+    document.getElementById('authForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) {
+          document.getElementById('authMessage').textContent = data.error;
+        } else {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          loginModal.style.display = 'none';
+          loginBtn.textContent = 'Profile';
+        }
+      });
     });
   </script>
 </body>

@@ -1,63 +1,78 @@
-// Shared JavaScript for Remote AI Jobs
-
+// Create job card HTML
 function createJobCard(job) {
-  const initials = job.company ? job.company.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() : 'CO';
+  const logo = job.company_logo || '🤖';
+  const salary = job.salary_min ? '$' + (job.salary_min / 1000).toFixed(0) + 'k' : 'Competitive';
+  const experience = job.experience_level || '';
   
-  const salaryText = job.salary_min 
-    ? `$${(job.salary_min/1000).toFixed(0)}k - $${(job.salary_max/1000).toFixed(0)}k`
-    : 'Salary undisclosed';
-  
-  const postedDate = new Date(job.posted_at).toLocaleDateString();
-  
-  const tags = Array.isArray(job.tags) 
-    ? job.tags.slice(0, 3).map(t => `<span class="tag">${t}</span>`).join('')
-    : '';
-  
-  return `
-    <div class="job-card ${job.featured ? 'featured' : ''}" onclick="window.location.href='/job.html?id=${job.id}'">
-      <div class="job-card-header">
-        <div class="company-logo">
-          ${job.company_logo 
-            ? `<img src="${job.company_logo}" alt="${job.company}" onerror="this.parentElement.innerText='${initials}'">`
-            : initials
-          }
-        </div>
-        <div class="job-info">
-          <div class="job-title">${job.title}</div>
-          <div class="company-name">${job.company}</div>
-        </div>
-      </div>
-      <div class="job-meta">
-        ${tags}
-        <span class="tag salary">${salaryText}</span>
-      </div>
-      <div class="job-footer">
-        <span class="posted-date">${postedDate}</span>
-        <span class="salary-range">${job.location || 'Remote'}</span>
-      </div>
-    </div>
-  `;
+  return '<div class="job-card">' +
+    '<div class="job-header">' +
+      '<span class="company-logo">' + logo + '</span>' +
+      '<div class="job-info">' +
+        '<h3><a href="/job.html?id=' + job.id + '">' + job.title + '</a></h3>' +
+        '<p class="company">' + job.company + '</p>' +
+      '</div>' +
+      (job.featured ? '<span class="featured-badge">Featured</span>' : '') +
+    '</div>' +
+    '<p class="job-description">' + job.description + '</p>' +
+    '<div class="job-meta">' +
+      '<span class="meta-item">💰 ' + salary + '+</span>' +
+      (experience ? '<span class="meta-item">📊 ' + experience + '</span>' : '') +
+      '<span class="meta-item">📍 ' + job.location + '</span>' +
+    '</div>' +
+    '<div class="job-tags">' +
+      job.tags.slice(0, 4).map(tag => '<span class="tag">' + tag + '</span>').join('') +
+    '</div>' +
+    '<div class="job-actions">' +
+      '<a href="/job.html?id=' + job.id + '" class="btn btn-primary btn-sm">View Details</a>' +
+      '<button class="btn btn-secondary btn-sm" onclick="saveJob(' + job.id + ')">Save</button>' +
+    '</div>' +
+  '</div>';
 }
 
-// Format currency
-function formatCurrency(amount) {
-  if (!amount) return 'Not specified';
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0
-  }).format(amount);
+// Save job
+function saveJob(jobId) {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please sign in to save jobs');
+    return;
+  }
+  // In production, this would save to the user profile
+  console.log('Saving job:', jobId);
 }
 
-// Debounce function
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
+// Format salary
+function formatSalary(amount) {
+  if (!amount) return 'Competitive';
+  return '$' + amount.toLocaleString();
+}
+
+// Track job view
+function trackJobView(jobId) {
+  fetch('/api/track/click', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jobId })
+  });
+}
+
+// Search jobs
+function searchJobs(query) {
+  window.location.href = '/jobs.html?q=' + encodeURIComponent(query);
+}
+
+// Check auth status
+function checkAuth() {
+  const token = localStorage.getItem('token');
+  const user = localStorage.getItem('user');
+  if (token && user) {
+    return JSON.parse(user);
+  }
+  return null;
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.reload();
 }

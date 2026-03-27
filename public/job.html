@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="/favicon.svg"><title>Job Detail | Remote AI Jobs</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <title>Job Details | RemoteAIJobs</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <nav class="navbar">
@@ -17,21 +15,50 @@
         <span>Remote<span class="accent">AI</span>Jobs</span>
       </a>
       <div class="nav-links">
-        <a href="/" class="nav-link">Home</a>
         <a href="/jobs.html" class="nav-link">Browse Jobs</a>
         <a href="/post.html" class="btn btn-primary">Post a Job</a>
       </div>
     </div>
   </nav>
 
-  <main class="container job-detail">
+  <main class="container">
     <a href="/jobs.html" class="back-link">← Back to Jobs</a>
     
-    <div class="job-detail-card" id="jobContainer">
-      <div class="job-card skeleton">
-        <div class="skeleton-line w-60"></div>
-        <div class="skeleton-line w-40"></div>
-        <div class="skeleton-line"></div>
+    <div class="job-detail" id="jobDetail">
+      <div class="job-detail-header">
+        <span class="company-logo-lg" id="companyLogo">🤖</span>
+        <div>
+          <h1 id="jobTitle">Loading...</h1>
+          <p class="company-lg" id="companyName"></p>
+        </div>
+      </div>
+      
+      <div class="job-detail-meta">
+        <span class="meta-badge" id="salaryRange">$--k</span>
+        <span class="meta-badge" id="experienceLevel">--</span>
+        <span class="meta-badge">📍 <span id="location">Remote</span></span>
+        <span class="meta-badge" id="companySize">--</span>
+      </div>
+      
+      <div class="job-section">
+        <h2>About the Role</h2>
+        <p id="jobDescription"></p>
+      </div>
+      
+      <div class="job-section">
+        <h2>Requirements</h2>
+        <p id="jobRequirements"></p>
+      </div>
+      
+      <div class="job-section">
+        <h2>Tags</h2>
+        <div class="job-tags" id="jobTags"></div>
+      </div>
+      
+      <div class="job-apply">
+        <a href="#" class="btn btn-primary btn-lg" id="applyBtn" target="_blank">Apply Now</a>
+        <button class="btn btn-secondary" id="saveJobBtn">Save Job</button>
+        <button class="btn btn-secondary" id="shareBtn">Share</button>
       </div>
     </div>
   </main>
@@ -45,6 +72,7 @@
         </div>
         <div class="footer-links">
           <a href="/">Home</a>
+          <a href="/jobs.html">Browse Jobs</a>
           <a href="/post.html">Post a Job</a>
         </div>
       </div>
@@ -54,66 +82,70 @@
     </div>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="/app.js"></script>
   <script>
-    const jobId = window.location.pathname.split('/').pop().replace('.html', '');
+    // Track page view
+    fetch('/api/track/pageview', { method: 'POST' });
     
-    async function loadJob() {
-      const res = await fetch(`/api/jobs/${jobId}`);
-      const job = await res.json();
-      
-      if (job.error) {
-        document.getElementById('jobContainer').innerHTML = '<p class="no-jobs">Job not found</p>';
-        return;
-      }
-      
-      document.title = `${job.title} at ${job.company} | Remote AI Jobs`;
-      
-      const salaryText = job.salary_min 
-        ? `$${(job.salary_min/1000).toFixed(0)}k - $${(job.salary_max/1000).toFixed(0)}k`
-        : 'Salary not disclosed';
-      
-      document.getElementById('jobContainer').innerHTML = `
-        <div class="job-detail-header">
-          <div class="job-detail-logo">
-            ${job.company_logo 
-              ? `<img src="${job.company_logo}" alt="${job.company}" onerror="this.parentElement.innerText='${job.company[0]}'">`
-              : job.company[0]
-            }
-          </div>
-          <div class="job-detail-title">
-            <h1>${job.title}</h1>
-            <p class="company">${job.company}</p>
-            <div class="job-meta">
-              <span class="tag">${job.location || 'Remote'}</span>
-              <span class="tag salary">${salaryText}</span>
-              ${job.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-            </div>
-          </div>
-        </div>
-        
-        <div class="job-detail-content">
-          <h2>Description</h2>
-          <p>${job.description || 'No description provided.'}</p>
-          
-          ${job.requirements ? `
-            <h2>Requirements</h2>
-            <p>${job.requirements}</p>
-          ` : ''}
-          
-          <div style="margin-top: 40px;">
-            <a href="${job.apply_url}" target="_blank" class="apply-btn">
-              Apply Now →
-            </a>
-            <p style="margin-top: 16px; color: var(--text-muted); font-size: 14px;">
-              Posted ${new Date(job.posted_at).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-      `;
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get('id');
+    
+    if (!jobId) {
+      window.location.href = '/jobs.html';
     }
     
-    loadJob();
+    fetch('/api/jobs/' + jobId)
+      .then(r => r.json())
+      .then(job => {
+        if (job.error) {
+          window.location.href = '/jobs.html';
+          return;
+        }
+        
+        // Track job view
+        trackJobView(job.id);
+        
+        document.getElementById('companyLogo').textContent = job.company_logo || '🤖';
+        document.getElementById('jobTitle').textContent = job.title;
+        document.getElementById('companyName').textContent = job.company;
+        document.getElementById('salaryRange').textContent = job.salary_min ? '$' + (job.salary_min / 1000).toFixed(0) + 'k+' : 'Competitive';
+        document.getElementById('experienceLevel').textContent = job.experience_level || 'Any Level';
+        document.getElementById('location').textContent = job.location || 'Remote';
+        document.getElementById('companySize').textContent = job.company_size || 'Unknown';
+        document.getElementById('jobDescription').textContent = job.description;
+        document.getElementById('jobRequirements').textContent = job.requirements;
+        document.getElementById('applyBtn').href = job.apply_url;
+        
+        document.title = job.title + ' | RemoteAIJobs';
+        
+        // Tags
+        document.getElementById('jobTags').innerHTML = job.tags.map(tag => 
+          '<a href="/jobs.html?tag=' + encodeURIComponent(tag) + '" class="tag">' + tag + '</a>'
+        ).join('');
+        
+        // Save job button
+        document.getElementById('saveJobBtn').addEventListener('click', () => {
+          const user = checkAuth();
+          if (!user) {
+            alert('Please sign in to save jobs');
+            return;
+          }
+          alert('Job saved!');
+        });
+        
+        // Share button
+        document.getElementById('shareBtn').addEventListener('click', () => {
+          if (navigator.share) {
+            navigator.share({
+              title: job.title + ' at ' + job.company,
+              url: window.location.href
+            });
+          } else {
+            navigator.clipboard.writeText(window.location.href);
+            alert('Link copied!');
+          }
+        });
+      });
   </script>
 </body>
 </html>

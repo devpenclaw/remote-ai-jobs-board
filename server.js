@@ -167,7 +167,8 @@ app.get("/api/jobs", function(req, res) {
 // Get single job
 app.get("/api/jobs/:id", function(req, res) {
   var id = parseInt(req.params.id);
-  var job = jobs.find(function(j) { return j.id === id; });
+  var allJobs = getAllJobs();
+  var job = allJobs.find(function(j) { return j.id === id; });
   if (!job) return res.status(404).json({ error: "Job not found" });
   
   // Track job view

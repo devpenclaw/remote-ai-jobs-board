@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const cors = require("cors");
 
 const app = express();
@@ -9,20 +10,6 @@ app.use(express.json());
 app.use(cors());
 
 const publicPath = path.join(__dirname, "public");
-var staticFiles = ["index.html", "jobs.html", "job.html", "post.html", "styles.css", "app.js"];
-app.get(/\/(.+)/, function(req, res) {
-  var file = req.params[0];
-  if (staticFiles.indexOf(file) === -1) return res.status(404).send("not found");
-  var filePath = path.join(publicPath, file);
-  fs.readFile(filePath, function(err, data) {
-    if (err) return res.status(404).send("not found");
-    res.send(data);
-  });
-});
-
-app.get("/", function(req, res) {
-  res.sendFile(path.join(publicPath, "index.html"));
-});
 
 const demoJobs = [
   { id: 1, title: "Senior ML Engineer", company: "OpenAI", company_logo: "https://logo.clearbit.com/openai.com", description: "Build cutting-edge AI models.", requirements: "Python, TensorFlow, PyTorch", salary_min: 200000, salary_max: 400000, location: "Remote", apply_url: "https://openai.com/careers", source: "manual", tags: ["Python", "TensorFlow", "PyTorch", "ML", "AI"], featured: 1, posted_at: new Date().toISOString() },
@@ -35,6 +22,7 @@ const demoJobs = [
   { id: 8, title: "AI Product Manager", company: "Runway", company_logo: "https://logo.clearbit.com/runwayml.com", description: "Lead AI product strategy.", requirements: "AI/ML experience, Product sense", salary_min: 160000, salary_max: 280000, location: "Remote", apply_url: "https://runwayml.com/careers", source: "demo", tags: ["Product", "AI", "Strategy"], featured: 0, posted_at: new Date().toISOString() }
 ];
 
+// API routes
 app.get("/api/jobs", function(req, res) {
   var jobs = demoJobs.slice();
   var search = req.query.search;
@@ -66,6 +54,26 @@ app.get("/api/jobs", function(req, res) {
 
 app.get("/api/stats", function(req, res) {
   res.json({ totalJobs: demoJobs.length, featuredJobs: demoJobs.filter(function(j) { return j.featured === 1; }).length });
+});
+
+// Static files
+function serveStatic(file, res) {
+  var filePath = path.join(publicPath, file);
+  fs.readFile(filePath, function(err, data) {
+    if (err) return res.status(404).send("not found");
+    res.send(data);
+  });
+}
+
+app.get("/index.html", function(req, res) { serveStatic("index.html", res); });
+app.get("/jobs.html", function(req, res) { serveStatic("jobs.html", res); });
+app.get("/job.html", function(req, res) { serveStatic("job.html", res); });
+app.get("/post.html", function(req, res) { serveStatic("post.html", res); });
+app.get("/styles.css", function(req, res) { serveStatic("styles.css", res); });
+app.get("/app.js", function(req, res) { serveStatic("app.js", res); });
+
+app.get("/", function(req, res) {
+  res.sendFile(path.join(publicPath, "index.html"));
 });
 
 app.listen(PORT, function() {

@@ -35,8 +35,21 @@ async function fetchScrapedJobs() {
   try {
     const scraper = require("./scraper-free.js");
     scrapedJobs = await scraper.fetchAllFreeJobs();
+    
+    // Optionally add JSearch jobs if API key is set
+    if (process.env.JSEARCH_API_KEY) {
+      try {
+        const jsearch = require("./scraper-jsearch.js");
+        const jsearchJobs = await jsearch.fetchJSearchAIJobs();
+        scrapedJobs.push(...jsearchJobs);
+        console.log("Added " + jsearchJobs.length + " jobs from JSearch");
+      } catch (e) {
+        console.error("JSearch error:", e.message);
+      }
+    }
+    
     jobsLastUpdated = new Date().toISOString();
-    console.log("Scraped " + scrapedJobs.length + " jobs from free APIs");
+    console.log("Total scraped jobs: " + scrapedJobs.length);
   } catch (e) {
     console.error("Scraping failed:", e.message);
   }
@@ -228,22 +241,30 @@ app.post("/api/alerts/subscribe", function(req, res) {
   var email = req.body.email;
   
   var user = users.find(function(u) { return u.token === token; });
+  var subEmail = email || (user ? user.email : null);
   
-  if (tag) {
-    if (!user) {
-      return res.status(401).json({ error: "Not authenticated" });
-    }
-    if (user.alerts.indexOf(tag) === -1) {
-      user.alerts.push(tag);
-    }
-    emailSubscriptions.push({ email: user.email, tag: tag, createdAt: new Date().toISOString() });
-  } else if (email) {
-    emailSubscriptions.push({ email: email, tag: "all", createdAt: new Date().toISOString() });
-  } else {
-    return res.status(400).json({ error: "Tag or email required" });
+  if (!subEmail) {
+    return res.status(400).json({ error: "Email required" });
   }
   
-  res.json({ ok: true, message: "Subscribed to alerts" });
+  if (tag) {
+    if (user) {
+      if (user.alerts.indexOf(tag) === -1) {
+        user.alerts.push(tag);
+      }
+    }
+    emailSubscriptions.push({ email: subEmail, tag: tag, createdAt: new Date().toISOString() });
+  } else {
+    emailSubscriptions.push({ email: subEmail, tag: "all", createdAt: new Date().toISOString() });
+  }
+  
+  // Send welcome email
+  var emailService = require("./email-service.js");
+  emailService.sendWelcomeEmail(subEmail).catch(function(e) {
+    console.error("Welcome email failed:", e.message);
+  });
+  
+  res.json({ ok: true, message: "Subscribed! Check your email for confirmation." });
 });
 
 // Get email subscriptions (admin)

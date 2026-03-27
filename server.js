@@ -71,6 +71,7 @@ app.get("/job.html", function(req, res) { serveStatic("job.html", res); });
 app.get("/post.html", function(req, res) { serveStatic("post.html", res); });
 app.get("/styles.css", function(req, res) { serveStatic("styles.css", res); });
 app.get("/app.js", function(req, res) { serveStatic("app.js", res); });
+app.get("/favicon.svg", function(req, res) { serveStatic("favicon.svg", res); });
 
 app.get("/", function(req, res) {
   res.sendFile(path.join(publicPath, "index.html"));

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Detail | Remote AI Jobs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-icon">🤖</span>
+        <span>Remote<span class="accent">AI</span>Jobs</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/jobs.html" class="nav-link">Browse Jobs</a>
+        <a href="/post.html" class="btn btn-primary">Post a Job</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container job-detail">
+    <a href="/jobs.html" class="back-link">← Back to Jobs</a>
+    
+    <div class="job-detail-card" id="jobContainer">
+      <div class="job-card skeleton">
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-40"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">🤖</span>
+          <span>Remote<span class="accent">AI</span>Jobs</span>
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/post.html">Post a Job</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 RemoteAIJobs. Built for the AI community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    const jobId = window.location.pathname.split('/').pop().replace('.html', '');
+    
+    async function loadJob() {
+      const res = await fetch(`/api/jobs/${jobId}`);
+      const job = await res.json();
+      
+      if (job.error) {
+        document.getElementById('jobContainer').innerHTML = '<p class="no-jobs">Job not found</p>';
+        return;
+      }
+      
+      document.title = `${job.title} at ${job.company} | Remote AI Jobs`;
+      
+      const salaryText = job.salary_min 
+        ? `$${(job.salary_min/1000).toFixed(0)}k - $${(job.salary_max/1000).toFixed(0)}k`
+        : 'Salary not disclosed';
+      
+      document.getElementById('jobContainer').innerHTML = `
+        <div class="job-detail-header">
+          <div class="job-detail-logo">
+            ${job.company_logo 
+              ? `<img src="${job.company_logo}" alt="${job.company}" onerror="this.parentElement.innerText='${job.company[0]}'">`
+              : job.company[0]
+            }
+          </div>
+          <div class="job-detail-title">
+            <h1>${job.title}</h1>
+            <p class="company">${job.company}</p>
+            <div class="job-meta">
+              <span class="tag">${job.location || 'Remote'}</span>
+              <span class="tag salary">${salaryText}</span>
+              ${job.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+        
+        <div class="job-detail-content">
+          <h2>Description</h2>
+          <p>${job.description || 'No description provided.'}</p>
+          
+          ${job.requirements ? `
+            <h2>Requirements</h2>
+            <p>${job.requirements}</p>
+          ` : ''}
+          
+          <div style="margin-top: 40px;">
+            <a href="${job.apply_url}" target="_blank" class="apply-btn">
+              Apply Now →
+            </a>
+            <p style="margin-top: 16px; color: var(--text-muted); font-size: 14px;">
+              Posted ${new Date(job.posted_at).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+    
+    loadJob();
+  </script>
+</body>
+</html>

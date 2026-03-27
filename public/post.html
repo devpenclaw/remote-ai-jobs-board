@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post a Job | Remote AI Jobs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-icon">🤖</span>
+        <span>Remote<span class="accent">AI</span>Jobs</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/jobs.html" class="nav-link">Browse Jobs</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>Post a Remote AI Job</h1>
+      <p>Reach 50,000+ AI professionals looking for their next role</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <form class="job-detail-card post-form" id="postForm">
+      <div class="form-group">
+        <label for="title">Job Title *</label>
+        <input type="text" id="title" placeholder="e.g. Senior ML Engineer" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="company">Company Name *</label>
+        <input type="text" id="company" placeholder="e.g. OpenAI" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Company Email *</label>
+        <input type="email" id="email" placeholder="recruiting@company.com" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="apply_url">Application URL *</label>
+        <input type="url" id="apply_url" placeholder="https://company.com/careers/apply" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="salary">Salary Range</label>
+        <input type="text" id="salary" placeholder="e.g. $150,000 - $250,000">
+      </div>
+      
+      <div class="form-group">
+        <label for="tags">Tags (comma separated)</label>
+        <input type="text" id="tags" placeholder="e.g. Python, TensorFlow, ML, Remote">
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Job Description *</label>
+        <textarea id="description" placeholder="Describe the role, responsibilities, and what you're looking for..." required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="requirements">Requirements</label>
+        <textarea id="requirements" placeholder="List the key requirements, skills, and qualifications..."></textarea>
+      </div>
+      
+      <div style="background: var(--bg-secondary); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+        <h3 style="margin-bottom: 12px;">Pricing</h3>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 12px;">
+          <strong>Free for first 5 jobs.</strong> After that:
+        </p>
+        <ul style="color: var(--text-secondary); font-size: 14px; list-style: none;">
+          <li>• $99/month — Up to 10 jobs</li>
+          <li>• $299/month — Unlimited jobs</li>
+        </ul>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" style="width: 100%;">
+        Submit Job Posting
+      </button>
+      
+      <p style="margin-top: 16px; color: var(--text-muted); font-size: 12px; text-align: center;">
+        Jobs are reviewed within 24 hours before going live.
+      </p>
+    </form>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">🤖</span>
+          <span>Remote<span class="accent">AI</span>Jobs</span>
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/jobs.html">Browse Jobs</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 RemoteAIJobs. Built for the AI community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      btn.textContent = 'Submitting...';
+      btn.disabled = true;
+      
+      const salaryInput = document.getElementById('salary').value;
+      let salary_min = null, salary_max = null;
+      
+      // Parse salary range
+      const salaryMatch = salaryInput.match(/(\$[\d,]+)\s*-\s*(\$[\d,]+)/);
+      if (salaryMatch) {
+        salary_min = parseInt(salaryMatch[1].replace(/[\$,]/g, ''));
+        salary_max = parseInt(salaryMatch[2].replace(/[\$,]/g, ''));
+      }
+      
+      const data = {
+        title: document.getElementById('title').value,
+        company: document.getElementById('company').value,
+        email: document.getElementById('email').value,
+        apply_url: document.getElementById('apply_url').value,
+        description: document.getElementById('description').value,
+        requirements: document.getElementById('requirements').value,
+        tags: document.getElementById('tags').value,
+        salary_min,
+        salary_max
+      };
+      
+      try {
+        const res = await fetch('/api/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          form.innerHTML = `
+            <div style="text-align: center; padding: 40px 0;">
+              <div style="font-size: 64px; margin-bottom: 16px;">✅</div>
+              <h2 style="margin-bottom: 8px;">Job Submitted!</h2>
+              <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                Your job will be reviewed and published within 24 hours.
+              </p>
+              <a href="/jobs.html" class="btn btn-primary">Browse Other Jobs</a>
+            </div>
+          `;
+        } else {
+          alert('Error: ' + result.error);
+          btn.textContent = 'Submit Job Posting';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+        btn.textContent = 'Submit Job Posting';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

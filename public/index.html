@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote AI Jobs | Find Your Next AI Role</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-icon">🤖</span>
+        <span>Remote<span class="accent">AI</span>Jobs</span>
+      </a>
+      <div class="nav-links">
+        <a href="/jobs.html" class="nav-link">Browse Jobs</a>
+        <a href="/post.html" class="btn btn-primary">Post a Job</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="container">
+      <div class="hero-badge">🚀 500+ Remote AI Jobs</div>
+      <h1>Find Your Next <span class="gradient-text">AI Role</span></h1>
+      <p class="hero-subtitle">Curated remote opportunities in Machine Learning, NLP, Computer Vision & AI Research</p>
+      
+      <form class="search-box" id="searchForm">
+        <input type="text" id="searchInput" placeholder="Search AI jobs... (e.g. 'ML Engineer', 'NLP')" value="">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+      
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-value" id="totalJobs">--</span>
+          <span class="stat-label">Active Jobs</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">100%</span>
+          <span class="stat-label">Remote Only</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">$150k+</span>
+          <span class="stat-label">Avg Salary</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="features">
+    <div class="container">
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Curated Opportunities</h3>
+          <p>Hand-picked AI roles from top companies. No fluff, no scams.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Real-Time Updates</h3>
+          <p>Jobs updated daily. Always fresh, always relevant.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">💰</div>
+          <h3>Premium Companies</h3>
+          <p>OpenAI, Anthropic, DeepMind, Tesla — all hiring remotely.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="featured-jobs">
+    <div class="container">
+      <div class="section-header">
+        <h2>Featured Opportunities</h2>
+        <a href="/jobs.html" class="btn btn-secondary">View All Jobs →</a>
+      </div>
+      <div class="jobs-grid" id="featuredJobs">
+        <div class="job-card skeleton">
+          <div class="skeleton-line w-60"></div>
+          <div class="skeleton-line w-40"></div>
+          <div class="skeleton-line"></div>
+        </div>
+        <div class="job-card skeleton">
+          <div class="skeleton-line w-60"></div>
+          <div class="skeleton-line w-40"></div>
+          <div class="skeleton-line"></div>
+        </div>
+        <div class="job-card skeleton">
+          <div class="skeleton-line w-60"></div>
+          <div class="skeleton-line w-40"></div>
+          <div class="skeleton-line"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories">
+    <div class="container">
+      <h2>Browse by Role</h2>
+      <div class="category-grid">
+        <a href="/jobs.html?tag=ML" class="category-card">
+          <span class="category-icon">🧠</span>
+          <span class="category-name">Machine Learning</span>
+        </a>
+        <a href="/jobs.html?tag=NLP" class="category-card">
+          <span class="category-icon">💬</span>
+          <span class="category-name">NLP</span>
+        </a>
+        <a href="/jobs.html?tag=Computer Vision" class="category-card">
+          <span class="category-icon">👁️</span>
+          <span class="category-name">Computer Vision</span>
+        </a>
+        <a href="/jobs.html?tag=Research" class="category-card">
+          <span class="category-icon">🔬</span>
+          <span class="category-name">AI Research</span>
+        </a>
+        <a href="/jobs.html?tag=MLOps" class="category-card">
+          <span class="category-icon">⚙️</span>
+          <span class="category-name">MLOps</span>
+        </a>
+        <a href="/jobs.html?tag=Python" class="category-card">
+          <span class="category-icon">🐍</span>
+          <span class="category-name">Python</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2> hiring AI talent?</h2>
+        <p>Reach 50,000+ AI professionals looking for remote roles.</p>
+        <a href="/post.html" class="btn btn-primary">Post a Job — $99/month</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">🤖</span>
+          <span>Remote<span class="accent">AI</span>Jobs</span>
+        </div>
+        <div class="footer-links">
+          <a href="/jobs.html">Browse Jobs</a>
+          <a href="/post.html">Post a Job</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 RemoteAIJobs. Built for the AI community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    // Load stats
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('totalJobs').textContent = data.totalJobs;
+      });
+
+    // Load featured jobs
+    fetch('/api/jobs?featured=true&limit=3')
+      .then(r => r.json())
+      .then(jobs => {
+        const container = document.getElementById('featuredJobs');
+        if (jobs.length === 0) {
+          container.innerHTML = '<p class="no-jobs">No featured jobs yet. <a href="/post.html">Post one!</a></p>';
+        } else {
+          container.innerHTML = jobs.map(job => createJobCard(job)).join('');
+        }
+      });
+
+    // Search form
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const q = document.getElementById('searchInput').value;
+      window.location.href = `/jobs.html?q=${encodeURIComponent(q)}`;
+    });
+  </script>
+</body>
+</html>

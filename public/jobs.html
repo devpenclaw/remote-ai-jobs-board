@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Jobs | Remote AI Jobs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <a href="/" class="logo">
+        <span class="logo-icon">🤖</span>
+        <span>Remote<span class="accent">AI</span>Jobs</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/post.html" class="btn btn-primary">Post a Job</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="page-header">
+    <div class="container">
+      <h1>Browse Remote AI Jobs</h1>
+      <p>500+ curated opportunities in Machine Learning, AI & Data Science</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Search jobs..." class="filter-select" style="flex:1">
+      <select id="tagFilter" class="filter-select">
+        <option value="">All Roles</option>
+        <option value="ML">Machine Learning</option>
+        <option value="NLP">NLP</option>
+        <option value="Computer Vision">Computer Vision</option>
+        <option value="Research">Research</option>
+        <option value="MLOps">MLOps</option>
+        <option value="Python">Python</option>
+      </select>
+      <select id="sortFilter" class="filter-select">
+        <option value="newest">Newest First</option>
+        <option value="salary-high">Salary: High to Low</option>
+        <option value="salary-low">Salary: Low to High</option>
+      </select>
+    </div>
+
+    <div class="jobs-grid" id="jobsContainer">
+      <div class="job-card skeleton">
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-40"></div>
+        <div class="skeleton-line"></div>
+      </div>
+      <div class="job-card skeleton">
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-40"></div>
+        <div class="skeleton-line"></div>
+      </div>
+      <div class="job-card skeleton">
+        <div class="skeleton-line w-60"></div>
+        <div class="skeleton-line w-40"></div>
+        <div class="skeleton-line"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="logo-icon">🤖</span>
+          <span>Remote<span class="accent">AI</span>Jobs</span>
+        </div>
+        <div class="footer-links">
+          <a href="/">Home</a>
+          <a href="/post.html">Post a Job</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 RemoteAIJobs. Built for the AI community.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q') || '';
+    const tag = params.get('tag') || '';
+
+    if (q) document.getElementById('searchInput').value = q;
+    if (tag) document.getElementById('tagFilter').value = tag;
+
+    let allJobs = [];
+
+    async function loadJobs() {
+      const res = await fetch('/api/jobs?limit=100');
+      allJobs = await res.json();
+      renderJobs();
+    }
+
+    function renderJobs() {
+      let jobs = [...allJobs];
+      
+      // Search filter
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      if (search) {
+        jobs = jobs.filter(j => 
+          j.title.toLowerCase().includes(search) ||
+          j.company.toLowerCase().includes(search) ||
+          (j.tags && j.tags.some(t => t.toLowerCase().includes(search)))
+        );
+      }
+      
+      // Tag filter
+      const tagFilter = document.getElementById('tagFilter').value;
+      if (tagFilter) {
+        jobs = jobs.filter(j => 
+          j.tags && j.tags.some(t => t.toLowerCase().includes(tagFilter.toLowerCase()))
+        );
+      }
+      
+      // Sort
+      const sort = document.getElementById('sortFilter').value;
+      if (sort === 'salary-high') {
+        jobs.sort((a, b) => (b.salary_max || 0) - (a.salary_max || 0));
+      } else if (sort === 'salary-low') {
+        jobs.sort((a, b) => (a.salary_min || 0) - (b.salary_min || 0));
+      } else {
+        jobs.sort((a, b) => new Date(b.posted_at) - new Date(a.posted_at));
+      }
+      
+      const container = document.getElementById('jobsContainer');
+      
+      if (jobs.length === 0) {
+        container.innerHTML = '<p class="no-jobs">No jobs found matching your criteria.</p>';
+        return;
+      }
+      
+      container.innerHTML = jobs.map(job => createJobCard(job)).join('');
+    }
+
+    document.getElementById('searchInput').addEventListener('input', renderJobs);
+    document.getElementById('tagFilter').addEventListener('change', renderJobs);
+    document.getElementById('sortFilter').addEventListener('change', renderJobs);
+
+    loadJobs();
+  </script>
+</body>
+</html>

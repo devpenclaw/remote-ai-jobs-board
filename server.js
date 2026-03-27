@@ -9,7 +9,16 @@ app.use(express.json());
 app.use(cors());
 
 const publicPath = path.join(__dirname, "public");
-app.use(express.static(publicPath));
+var staticFiles = ["index.html", "jobs.html", "job.html", "post.html", "styles.css", "app.js"];
+app.get("/:file", function(req, res) {
+  var file = req.params.file;
+  if (staticFiles.indexOf(file) === -1) return res.status(404).send("not found");
+  var filePath = path.join(publicPath, file);
+  fs.readFile(filePath, function(err, data) {
+    if (err) return res.status(404).send("not found");
+    res.send(data);
+  });
+});
 
 app.get("/", function(req, res) {
   res.sendFile(path.join(publicPath, "index.html"));

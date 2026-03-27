@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 
 // Turso database connection
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL || 'libsql://remote-ai-jobs-devpenclaw.aws-eu-west-1.turso.io',
+  url: process.env.TURSO_DATABASE_URL || 'https://remote-ai-jobs-devpenclaw.aws-eu-west-1.turso.io',
   authToken: process.env.TURSO_AUTH_TOKEN || ''
 });
 

@@ -26,9 +26,38 @@ const demoJobs = [
   { id: 10, title: "Senior MLOps Engineer", company: "Weights & Biases", company_logo: "📊", description: "Build ML platform infrastructure.", requirements: "Kubernetes, Python, AWS", salary_min: 180000, salary_max: 280000, location: "Remote", apply_url: "https://wandb.com/careers", source: "manual", tags: ["MLOps", "Kubernetes", "AWS", "Python"], featured: 0, posted_at: new Date().toISOString(), experience_level: "Senior", company_size: "50-100" }
 ];
 
-// Scraped jobs (fetched from free APIs)
+// Scraped jobs (fetched from free APIs) - persisted to file
+const JOBS_FILE = process.env.VERCEL ? "/tmp/jobs-cache.json" : path.join(__dirname, "jobs-cache.json");
 let scrapedJobs = [];
 let jobsLastUpdated = null;
+
+// Load cached jobs from file
+function loadCachedJobs() {
+  try {
+    if (fs.existsSync(JOBS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(JOBS_FILE, "utf8"));
+      scrapedJobs = data.jobs || [];
+      jobsLastUpdated = data.lastUpdated;
+      console.log("Loaded " + scrapedJobs.length + " cached jobs");
+    }
+  } catch (e) {
+    console.error("Failed to load cached jobs:", e.message);
+  }
+}
+
+// Save jobs to file cache
+function saveJobsCache() {
+  try {
+    fs.writeFileSync(JOBS_FILE, JSON.stringify({
+      jobs: scrapedJobs,
+      lastUpdated: jobsLastUpdated
+    }, null, 2));
+  } catch (e) {
+    console.error("Failed to save job cache:", e.message);
+  }
+}
+
+loadCachedJobs();
 
 // Fetch jobs from free APIs
 async function fetchScrapedJobs() {
@@ -60,6 +89,7 @@ async function fetchScrapedJobs() {
     
     jobsLastUpdated = new Date().toISOString();
     console.log("Total scraped jobs: " + scrapedJobs.length);
+    saveJobsCache();
   } catch (e) {
     console.error("Scraping failed:", e.message);
   }
@@ -160,9 +190,11 @@ app.get("/api/stats", function(req, res) {
 
 // Refresh scraped jobs
 app.post("/api/jobs/refresh", function(req, res) {
+  // Don't wait for fetch, just trigger it
   fetchScrapedJobs().then(function() {
-    res.json({ ok: true, scrapedJobs: scrapedJobs.length });
+    saveJobsCache();
   });
+  res.json({ ok: true, message: "Refreshing jobs in background...", scrapedJobs: scrapedJobs.length });
 });
 
 // Get analytics (admin)

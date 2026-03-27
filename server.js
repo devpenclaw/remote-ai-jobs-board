@@ -20,6 +20,11 @@ app.use(express.json());
 app.use(express.static('public'));
 app.use(cors());
 
+// Serve index.html for root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Initialize database tables
 async function initDB() {
   await db.execute(`

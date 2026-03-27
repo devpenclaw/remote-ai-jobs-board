@@ -6,7 +6,7 @@ const https = require("https");
 // JSearch API config
 const JSEARCH_HOST = "jsearch.p.rapidapi.com";
 // Set via JSEARCH_API_KEY env var or hardcode below
-const JSEARCH_KEY = process.env.JSEARCH_API_KEY || "";
+const JSEARCH_KEY = process.env.JSEARCH_API_KEY || "1e54e3d5e0mshaac8f987a140a78p118fb3jsn5a810e7d7011";
 
 function fetchJSearchJobs(query, numResults = 10) {
   return new Promise((resolve, reject) => {

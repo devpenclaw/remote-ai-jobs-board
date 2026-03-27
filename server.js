@@ -36,15 +36,25 @@ async function fetchScrapedJobs() {
     const scraper = require("./scraper-free.js");
     scrapedJobs = await scraper.fetchAllFreeJobs();
     
-    // Optionally add JSearch jobs if API key is set
-    if (process.env.JSEARCH_API_KEY) {
+    // Add JSearch jobs
+    try {
+      const jsearch = require("./scraper-jsearch.js");
+      const jsearchJobs = await jsearch.fetchJSearchAIJobs();
+      scrapedJobs.push(...jsearchJobs);
+      console.log("Added " + jsearchJobs.length + " jobs from JSearch");
+    } catch (e) {
+      console.error("JSearch error:", e.message);
+    }
+    
+    // Add LinkedIn jobs if API key is set
+    if (process.env.LINKEDIN_API_KEY) {
       try {
-        const jsearch = require("./scraper-jsearch.js");
-        const jsearchJobs = await jsearch.fetchJSearchAIJobs();
-        scrapedJobs.push(...jsearchJobs);
-        console.log("Added " + jsearchJobs.length + " jobs from JSearch");
+        const linkedin = require("./scraper-linkedin.js");
+        const linkedinJobs = await linkedin.fetchLinkedInJobs();
+        scrapedJobs.push(...linkedinJobs);
+        console.log("Added " + linkedinJobs.length + " jobs from LinkedIn");
       } catch (e) {
-        console.error("JSearch error:", e.message);
+        console.error("LinkedIn error:", e.message);
       }
     }
     
